@@ -1,0 +1,50 @@
+workdir: /tmp
+
+datagrabber:
+    kind: DataladAOMICID1000
+    native_t1w: true
+
+preprocess:
+  - kind: fMRIPrepConfoundRemover
+    detrend: true
+    standardize: true
+    strategy:
+        motion: full
+        wm_csf: full
+        global_signal: full
+    low_pass: 0.08
+    high_pass: 0.01
+    masks:
+      - inherit
+      - compute_epi_mask
+      - threshold: 0
+  - kind: SpaceWarper
+    reference: T1w
+    on: BOLD
+    using: ants
+
+markers:
+  - name: FC-Schaefer100x17
+    kind: FunctionalConnectivityParcels
+    cor_method: correlation
+    parcellation: Schaefer100x17
+    masks: 
+      - inherit
+
+storage:
+  kind: HDF5FeatureStorage
+  uri: /data/group/riseml/fraimondo/2024_HIP/features/ds003097_FC_native/ds003097_FC_native.hdf5
+
+queue:
+  jobname: aomic_fc_native
+  kind: HTCondor
+  env:
+    kind: conda
+    name: neurodc
+  mem: 8G
+  disk: 5G
+  verbose: info
+  pre_run: |
+    source /data/group/appliedml/tools/afni_23.1.10/afni.sh
+    source /data/group/appliedml/tools/ants_2.5.0/ants.sh
+    source /data/group/appliedml/tools/fsl_6.0.4-patched2/fsl.sh

@@ -1,0 +1,27 @@
+workdir: /tmp
+
+datagrabber:
+  kind: DataladAOMICID1000
+  types:
+    - FreeSurfer
+
+markers:
+  - name: brainprint
+    kind: BrainPrint
+
+storage:
+  kind: HDF5FeatureStorage
+  uri: ./storage/brainprint/aomicid1000_brainprint.hdf5
+
+queue:
+  jobname: brainprint
+  kind: HTCondor
+  collect: on_success_only
+  env:
+    kind: conda
+    name: junifer-dev
+    shell: zsh
+  mem: 8G
+  verbose: 8
+  pre_run: |
+    source /data/group/appliedml/tools/freesurfer_7.4.1/freesurfer.sh

@@ -1,0 +1,58 @@
+workdir: /tmp
+
+datagrabber:
+  kind: DataladAOMICID1000
+  types: 
+      - BOLD
+      - BOLD_confounds
+      - BOLD_mask
+
+preprocess:
+    kind: fMRIPrepConfoundRemover
+    detrend: true
+    standardize: true
+    strategy:
+        motion: full
+        wm_csf: full
+        global_signal: full
+    low_pass: 0.08
+    high_pass: 0.01
+    masks:
+      - inherit
+      - compute_epi_mask
+      - threshold: 0
+  
+markers:
+  - name: FC-DMNBuckner-5mm
+    kind: FunctionalConnectivitySpheres
+    cor_method: correlation
+    coords: DMNBuckner
+    radius: 5
+    allow_overlap: true
+    masks: 
+      - inherit
+
+  - name: FC-Schaefer100x17
+    kind: FunctionalConnectivityParcels
+    cor_method: correlation
+    parcellation: Schaefer100x17
+    masks: 
+      - inherit
+
+storage:
+  kind: HDF5FeatureStorage
+  uri: /data/group/riseml/fraimondo/2024_HIP/features/ds003097_FC/ds003097_FC.hdf5
+
+queue:
+  jobname: aomic_fc
+  kind: HTCondor
+  env:
+    kind: conda
+    name: neurodc
+  mem: 8G
+  disk: 5G
+  verbose: info
+  pre_run: |
+    source /data/group/appliedml/tools/afni_23.1.10/afni.sh
+    source /data/group/appliedml/tools/ants_2.5.0/ants.sh
+    source /data/group/appliedml/tools/fsl_6.0.4-patched2/fsl.sh
